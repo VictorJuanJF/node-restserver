@@ -4,8 +4,15 @@ const _ = require('underscore');
 const Usuario = require('../models/usuario');
 const app = express();
 const hbs = require('hbs');
+const { verifikaToken, verifikaRol } = require('../middlewares/autenticacion');
 
-app.get('/usuario', function(req, res) {
+app.get('/usuario', verifikaToken, (req, res) => {
+
+    return res.json({
+        usuario: req.usuario,
+        nombre: req.usuario.nombre,
+        email: req.usuario.email
+    });
     let desde = req.query.desde || 0;
     let limite = req.query.limite || 5;
     limite = Number(limite);
@@ -32,7 +39,7 @@ app.get('/usuario', function(req, res) {
         });
 });
 
-app.post('/usuario', function(req, res) {
+app.post('/usuario', [verifikaToken, verifikaRol], function(req, res) {
     let body = req.body;
     let usuario = new Usuario({
         nombre: body.nombre,
@@ -60,7 +67,7 @@ app.post('/usuario', function(req, res) {
 
 });
 
-app.put('/usuario/:id', function(req, res) {
+app.put('/usuario/:id', verifikaToken, function(req, res) {
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
 
@@ -81,7 +88,7 @@ app.put('/usuario/:id', function(req, res) {
 
 });
 
-app.delete('/usuario/:id', function(req, res) {
+app.delete('/usuario/:id', verifikaToken, function(req, res) {
     let id = req.params.id;
     //With this part delete all the document, we just need to update it
     // Usuario.findByIdAndRemove(id, (err, DeletedUser) => {
